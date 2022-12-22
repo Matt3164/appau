@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "appau"
+  site-url: "https://Matt3164.github.io/appau"
+  description: "Bibliothèque de ressources pour l'introduction à l'apprentissage automatique"
+  repo-branch: main
+  repo-url: "https://github.com/Matt3164/appau"
