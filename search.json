@@ -1,0 +1,79 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "appau : APPrentissage AUtomatique",
+    "section": "",
+    "text": "Ce repo contient des tutoriels pour les fonctions essentielles liées à l’apprentissage automatique.\nSi il manque quelque chose, n’hésite pas à me signaler en ISSUES"
+  },
+  {
+    "objectID": "Tutoriels/skimage.html",
+    "href": "Tutoriels/skimage.html",
+    "title": "Traitement d’image basique avec scikit-image",
+    "section": "",
+    "text": "Chargement des données pour les tests\n\nfrom skimage.exposure import rescale_intensity\nimport numpy as np\nfrom skimage.data import chelsea\nfrom matplotlib.pyplot import subplot, imshow, axis\nfrom matplotlib import pyplot as plt\n\nexample_img = chelsea()\n\nChanger linéairement la radiométrie : (minimum, maximum) -> (nouveau_minimum, nouveau_maximum)\n\nsubplot(1,2,1)\n# \"image\" -> calcule le min et le max de l'image\nimshow(rescale_intensity(example_img, in_range=\"image\", out_range=np.uint8))\naxis(\"off\")\nsubplot(1,2,2)\nimshow(rescale_intensity(example_img, in_range=(0,128), out_range=np.uint8))\naxis(\"off\")\n\n(-0.5, 450.5, 299.5, -0.5)\n\n\n\n\n\nEntrée/sortie : écriture et lecture des fichiers\n\nfrom skimage.io import imread, imsave\n\ntmp_img_path = \"/tmp/chelsea.jpg\"\n\nimsave(tmp_img_path, example_img)\n\nreloaded_img = imread(tmp_img_path)\n\nimshow(reloaded_img)\naxis(\"off\")\n\n(-0.5, 450.5, 299.5, -0.5)\n\n\n\n\n\n\nDescripteurs\nIl est courant de vouloir calculer des descripteurs sur les images pour faire de l’apprentissage. Les fonctions permettent de le faire avec des techniques classiques.\n\nfrom skimage.transform import resize\nfrom skimage.color import rgb2gray\n\nDAISY\n\nfrom skimage.feature import daisy\nim = resize(rgb2gray(chelsea()), (256,256))\n\ndescs, descs_img = daisy(im, step=64, radius=58, rings=2, histograms=6,\n                         orientations=8, visualize=True)\n\nHOG\n\nfrom skimage.feature import hog\n\nim = chelsea()\n\nim = resize(rgb2gray(im), (64,64))\n\nfd, hog_image = hog(im, orientations=8, pixels_per_cell=(8, 8),\n                    cells_per_block=(1, 1), visualize=True, multichannel=False)\n\nsubplot(1,2,1)\nimshow(im, cmap=plt.cm.gray)\naxis(\"off\")\n\n# Rescale histogram for better display\nhog_image_rescaled = rescale_intensity(hog_image, in_range=(0, 10))\nsubplot(1,2,2)\nimshow(hog_image_rescaled, cmap=plt.cm.gray)\naxis(\"off\")\n\n(-0.5, 63.5, 63.5, -0.5)\n\n\n\n\n\nLBP\n\nfrom skimage.feature import local_binary_pattern\n\n# settings for LBP\nradius = 3\nn_points = 8 * radius\n\nimage = resize(rgb2gray(chelsea()), (32, 32))\nlbp = local_binary_pattern(image, n_points, radius, \"uniform\")\n\nsubplot(1,2,1)\nimshow(image, cmap=plt.cm.gray)\naxis(\"off\")\nsubplot(1,2,2)\nimshow(lbp, cmap=plt.cm.gray)\naxis(\"off\")\n\n(-0.5, 31.5, 31.5, -0.5)\n\n\n\n\n\nHaar features pour Viola Jones\n\nfrom skimage.feature import haar_like_feature_coord, haar_like_feature\nfrom skimage.transform import integral_image\n\nfeature_types = ['type-2-x', 'type-2-y',\n                 'type-3-x', 'type-3-y',\n                 'type-4']\n\nim = resize(rgb2gray(chelsea()), (32, 32))\n\nimg_ii = integral_image(im)\n\n# Extract all possible features\nfeature_coord, feature_type = haar_like_feature_coord(width=im.shape[0], height=im.shape[1],\n                            feature_type=feature_types)\n\nprint(f\"Number of haar feature : {feature_coord.shape[0]}\")\n\n# Limiting feature for convenience reasons\n# This example should run fast :smile:\nfeature_coord = feature_coord[:256]\nfeature_type = feature_type[:256]\n\nfeats = haar_like_feature(img_ii, 0, 0, img_ii.shape[0], img_ii.shape[1], feature_type=feature_type, feature_coord=feature_coord)\n\nprint(f\"Extracted features: {feats.shape}\")\n\nNumber of haar feature : 509270\nExtracted features: (256,)\n\n\nPour aller plus loin, voir Haralick"
+  },
+  {
+    "objectID": "Tutoriels/mlflow.html",
+    "href": "Tutoriels/mlflow.html",
+    "title": "MLFlow",
+    "section": "",
+    "text": "\"\"\"import mlflow\n\nwith mlflow.start_run():\n        \n# ... Fit model   \n\nmlflow.log_param(\"alpha\", alpha)\nmlflow.log_param(\"l1_ratio\", l1_ratio)\nmlflow.log_metric(\"rmse\", rmse)\nmlflow.log_metric(\"r2\", r2)\nmlflow.log_metric(\"mae\", mae)\n\nmlflow.sklearn.log_model(lr, \"model\")\"\"\"\n\n'import mlflow\\n\\nwith mlflow.start_run():\\n        \\n        # ... Fit model   \\n\\n        mlflow.log_param(\"alpha\", alpha)\\n        mlflow.log_param(\"l1_ratio\", l1_ratio)\\n        mlflow.log_metric(\"rmse\", rmse)\\n        mlflow.log_metric(\"r2\", r2)\\n        mlflow.log_metric(\"mae\", mae)\\n\\n        mlflow.sklearn.log_model(lr, \"model\")'"
+  },
+  {
+    "objectID": "Tutoriels/type_hints.html",
+    "href": "Tutoriels/type_hints.html",
+    "title": "Type Hints",
+    "section": "",
+    "text": "def f(a: int, b: float, s: str)->str:\n    return s + f\"{a}_{b}\"\n\nprint(f(1, 2, \"a_\"))\n\na_1_2\n\n\nWIP : Pour aller plus loin, on peut parler des Generic, des Optional ou les référénces aux classes dans les constructeurs"
+  },
+  {
+    "objectID": "Tutoriels/scipy.html",
+    "href": "Tutoriels/scipy.html",
+    "title": "Scipy",
+    "section": "",
+    "text": "Interpolation d’un signal\n\nimport numpy as np\nfrom scipy import interpolate\nfrom matplotlib.pyplot import plot\n\n\nx = np.linspace(0, 4, 12)\n\ny = np.cos(x**2/3+4)\n\nf1 = interpolate.interp1d(x, y,kind = 'linear')\nf2 = interpolate.interp1d(x, y, kind = 'cubic')\n\nxnew = np.linspace(0, 4,30)\n\nnew_values1 = f1(xnew)\nplot(x, y, \"o\")\nplot(xnew, new_values1, \"+--\")"
+  },
+  {
+    "objectID": "Tutoriels/functools.html",
+    "href": "Tutoriels/functools.html",
+    "title": "Functools",
+    "section": "",
+    "text": "Créer une nouvelle fonction en fixant des arguments\n\nfrom functools import partial\n\ndef add(i1: int, i2: int)->int:\n    return i1+i2\n\nadd2 = partial(add, i2=2)\n\nprint(add2(2))\n\n4"
+  },
+  {
+    "objectID": "Tutoriels/itertools.html",
+    "href": "Tutoriels/itertools.html",
+    "title": "Itertools",
+    "section": "",
+    "text": "import itertools\n\nItérer sur un sous ensemble de l’itérateur\n\nfrom itertools import islice\n# Nouvel itérateur démarrant à 2 jusqu'à 50 , 10 par 10\nprint( [ e for e in islice(range(100),2, 50, 10)] )\n\n[2, 12, 22, 32, 42]\n\n\nChainer plusieurs itérateurs : passe les éléments du premier itérateur en revue puis ceux du second\n\nprint(list(itertools.chain.from_iterable([[1,2], [5,6,7]])))\n\n[1, 2, 5, 6, 7]\n\n\nCopier un itérateur : un itérateur se “vide” lorsque l’on itère dessus, une copie permet de le réutiliser par exemple.\n\ninit_iter = range(3)\n# Crée deux itérateurs synchronisés\nsync1, sync2 = itertools.tee(init_iter)\n# Applique deux fonctions différentes pour valider la copie des itérateurs\nfor val, valplusone in zip(sync1, map(lambda x: x+1, sync2)):\n    print(f\"Values: 1st iter {val}, 2nd iter {valplusone}\")\n\nValues: 1st iter 0, 2nd iter 1\nValues: 1st iter 1, 2nd iter 2\nValues: 1st iter 2, 2nd iter 3"
+  },
+  {
+    "objectID": "Tutoriels/hyperopt.html",
+    "href": "Tutoriels/hyperopt.html",
+    "title": "Hyperopt",
+    "section": "",
+    "text": "How to hyperparameter tuning using hyperopt\nSource.\nPlease check Hyperparatemer tuning for more details on the basic principles.\nhyperopt is one of the many open source libraries available to do it in Python. Here is an example on how to use it to optimize the type classifier and its parameters at the end of sklearn pipeline\n\nfrom sklearn.datasets import make_classification\nfrom sklearn.pipeline import make_pipeline\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.preprocessing import StandardScaler, KBinsDiscretizer\nfrom sklearn.decomposition import PCA\nfrom sklearn.metrics import accuracy_score\nfrom sklearn.neural_network import MLPClassifier\nfrom sklearn.neighbors import KNeighborsClassifier\nfrom hyperopt import tpe, hp, fmin, STATUS_OK\n\nx, y = make_classification(1000)\n\ndef objective(params):\n    global x, y\n    pipe = make_pipeline(\n        ColumnTransformer(\n            [\n                (\"scaled\", StandardScaler(), slice(0, 10)),\n                (\"disc\", KBinsDiscretizer(n_bins=10), slice(10,12)),\n                (\"rest\", \"passthrough\", slice(12,20))\n        ]), \n        PCA(n_components=2),\n        params[\"model\"](**params[\"kwargs\"])\n    )\n    \n    pipe.fit(x, y)\n\n    accuracy =accuracy_score(pipe.predict(x), y)\n    \n    return {'loss': -accuracy, \"status\": STATUS_OK}\n\nsearch_space = hp.choice(\"classifier\",[\n        {'model': KNeighborsClassifier,\n        'kwargs': {'n_neighbors': hp.choice('n_neighbors',range(3,11))}\n        },\n        {'model': MLPClassifier,\n        'kwargs': {'hidden_layer_sizes':hp.choice('layers',[(10,10), (100,100), (256,256)])}}\n        ])\n\n\nbest_result = fmin(\n    fn=objective, \n    space=search_space,\n    algo=tpe.suggest,\n    max_evals=4,\n    )\nprint(best_result)\n\n100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:01<00:00,  2.37trial/s, best loss: -0.897]\n{'classifier': 0, 'n_neighbors': 0}"
+  },
+  {
+    "objectID": "Tutoriels/pandas.html",
+    "href": "Tutoriels/pandas.html",
+    "title": "Pandas",
+    "section": "",
+    "text": "Il existe beaucoup de moyens divfférents pour créer une DataFrame en voici des exemples:\n\nimport numpy as np\nimport pandas\n\ncol1 = np.random.rand(100)\ncol2 = np.random.rand(100)\n\n# From dict of numpy arrays\n\nprint( pandas.DataFrame.from_dict({\"col1\":col1,\"col2\":col2}).head() ) \n\n# From numpy array and list of column names\n\nprint(pandas.DataFrame.from_records(np.hstack([col1.reshape(-1,1), col2.reshape(-1,1)]), columns=[\"col1\", \"col2\"]).head())\n\n# From list of row dict\n\nrow_dict = list( map(lambda x: {\"col1\": x[0], \"col2\": x[1]} , zip(col1, col2)) )\n\nprint(pandas.DataFrame.from_records(row_dict).head())\n\n       col1      col2\n0  0.277083  0.086090\n1  0.946478  0.591043\n2  0.383442  0.147374\n3  0.269483  0.795268\n4  0.163673  0.095232\n       col1      col2\n0  0.277083  0.086090\n1  0.946478  0.591043\n2  0.383442  0.147374\n3  0.269483  0.795268\n4  0.163673  0.095232\n       col1      col2\n0  0.277083  0.086090\n1  0.946478  0.591043\n2  0.383442  0.147374\n3  0.269483  0.795268\n4  0.163673  0.095232\n\n\nCalculer les éléments uniques d’un tableau ou d’une dataframe\n\nnp.unique(np.random.randint(0,255,size=(10,)))\n\nnp.unique(np.random.randint(0,255,size=(10,)), return_counts=True)\n\ndf = pandas.DataFrame(np.random.randint(0,255,size=(10,)) , columns=[\"test\"])\nprint(pandas.unique(df.test))\n\n[158  13  71   4 184  44 173 144 251 193]\n\n\nEntrées/sorties sur système de fichiers\n\ncol1 = np.random.rand(100)\ncol2 = np.random.rand(100)\n\ndf = pandas.DataFrame.from_dict({\"col1\":col1,\"col2\":col2})\n\ndf.to_csv(\"/tmp/data.csv\")\n\nloaded_df = pandas.read_csv(\"/tmp/data.csv\", index_col=0)"
+  },
+  {
+    "objectID": "Tutoriels/multiprocessing.html",
+    "href": "Tutoriels/multiprocessing.html",
+    "title": "Multiprocessing",
+    "section": "",
+    "text": "import multiprocessing\n\ndef f(x: float)->float:\n    return x**2 + x + 1\n\nsamples = list(range(10))\n\nwith multiprocessing.Pool(4) as p:\n        print(p.map(f, samples))\n\n[1, 3, 7, 13, 21, 31, 43, 57, 73, 91]\n\n\nPour aller plus loin, on peut utiliser tqdm pour avoir une barre de progression en plus.\n\nfrom tqdm.contrib.concurrent import process_map\n\nprocess_map(f, samples, max_workers=4)\n\n\n\n\n[1, 3, 7, 13, 21, 31, 43, 57, 73, 91]"
+  },
+  {
+    "objectID": "Tutoriels/joblib.html",
+    "href": "Tutoriels/joblib.html",
+    "title": "Joblib",
+    "section": "",
+    "text": "Définition d’une fonction lente et de sa variante avec cache\n\nimport time\nimport numpy as np\n\n\ndef costly_compute(data, column_index=0):\n    \"\"\"Simulate an expensive computation\"\"\"\n    time.sleep(3)\n    return data[column_index]\n\nfrom joblib import Memory\nlocation = './cachedir'\nmemory = Memory(location, verbose=0)\n\ncostly_compute_cached = memory.cache(costly_compute)\n\nFaisons les tests:\n\nrng = np.random.RandomState(42)\ndata = rng.randn(int(1e5), 10)\nstart = time.time()\ndata_trans = costly_compute(data)\nend = time.time()\n\nprint(\"Sans cache :\")\nprint('\\nLa fonction a pris : {:.2f} s .'.format(end - start))\n\nstart = time.time()\ndata_trans = costly_compute_cached(data)\nend = time.time()\nprint(\"Avec l'option cache mais le cache est vide :\")\nprint('\\nLa fonction a pris {:.2f} s .'.format(end - start))\n\nstart = time.time()\ndata_trans = costly_compute_cached(data)\nend = time.time()\nprint(\"Avec l'option cache mais le cache est rempli :\")\nprint('\\nLa fonction a pris {:.2f} s .'.format(end - start))\n\nSans cache :\n\nLa fonction a pris : 3.00 s .\nAvec l'option cache mais le cache est vide :\n\nLa fonction a pris 3.04 s .\nAvec l'option cache mais le cache est rempli :\n\nLa fonction a pris 0.01 s ."
+  }
+]
